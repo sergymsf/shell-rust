@@ -17,6 +17,10 @@ fn main() {
         if command == "exit 0" {
             process::exit(0);
         }
+        if command.starts_with("echo ") {
+            println!("{}", &command[5..]);
+            continue;
+        }
 
         println!("{}: command not found", command);
     }
