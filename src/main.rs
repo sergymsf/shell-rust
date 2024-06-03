@@ -64,6 +64,18 @@ fn main() {
                 continue;
             }
             let new_dir = args[1];
+            let new_dir = if new_dir == "~" {
+                match env::var("HOME") {
+                    Ok(home) => home,
+                    Err(_) => {
+                        eprintln!("HOME environment variable not set");
+                        continue;
+                    }
+                }
+            } else {
+                new_dir.to_string()
+            };
+
             if let Err(_err) = env::set_current_dir(new_dir) {
                 println!("{}: No such file or directory", new_dir);
             }
