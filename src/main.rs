@@ -76,7 +76,7 @@ fn main() {
                 new_dir.to_string()
             };
 
-            if let Err(_err) = env::set_current_dir(new_dir) {
+            if let Err(_err) = env::set_current_dir(&new_dir) {
                 println!("{}: No such file or directory", new_dir);
             }
             continue;
