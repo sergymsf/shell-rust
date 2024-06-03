@@ -4,6 +4,7 @@ use std::fs;
 use std::io::{self, Write};
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
+use std::process::Command;
 
 fn main() {
 
@@ -43,7 +44,28 @@ fn main() {
             continue;
         }
 
-        println!("{}: command not found", command);
+        let parts: Vec<&str> = command.split_whitespace().collect();
+        if parts.is_empty() {
+            continue;
+        }
+
+        let cmd_name = parts[0];
+        let cmd_args = &parts[1..];
+
+        if let Some(path) = find_in_path(cmd_name) {
+            match Command::new(path).args(cmd_args).status() {
+                Ok(status) => {
+                    if !status.success() {
+                        eprintln!("{}: command failed with status {}", cmd_name, status);
+                    }
+                }
+                Err(err) => {
+                    eprintln!("{}: failed to execute: {}", cmd_name, err);
+                }
+            }
+        } else {
+            println!("{}: command not found", cmd_name);
+        }
     }
 }
 
