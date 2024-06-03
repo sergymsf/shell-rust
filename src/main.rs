@@ -1,5 +1,9 @@
-use std::io::{self, Write};
 use std::process;
+use std::env;
+use std::fs;
+use std::io::{self, Write};
+use std::os::unix::fs::PermissionsExt;
+use std::path::Path;
 
 fn main() {
 
@@ -30,7 +34,11 @@ fn main() {
             if builtins.contains(&to_check) {
                 println!("{} is a shell builtin", to_check);
             } else {
-                println!("{} not found", to_check);
+                if let Some(path) = find_in_path(to_check) {
+                    println!("{} is {}", to_check, path.display());
+                } else {
+                    println!("{}: not found", to_check);
+                }
             }
             continue;
         }
@@ -38,3 +46,24 @@ fn main() {
         println!("{}: command not found", command);
     }
 }
+
+fn find_in_path(command: &str) -> Option<std::path::PathBuf> {
+    if let Ok(path_var) = env::var("PATH") {
+        for path in path_var.split(':') {
+            let full_path = Path::new(path).join(command);
+            if full_path.is_file() && is_executable(&full_path) {
+                return Some(full_path);
+            }
+        }
+    }
+    None
+}
+
+fn is_executable(path: &Path) -> bool {
+    if let Ok(metadata) = fs::metadata(path) {
+        metadata.is_file() && metadata.permissions().mode() & 0o111 != 0
+    } else {
+        false
+    }
+}
+
