@@ -44,6 +44,32 @@ fn main() {
             continue;
         }
 
+        if command == "pwd" {
+            if let Ok(current_dir) = env::current_dir() {
+                if let Some(path) = current_dir.to_str() {
+                    println!("{}", path);
+                } else {
+                    eprintln!("Failed to convert current directory to string");
+                }
+            } else {
+                eprintln!("Failed to get current directory");
+            }
+            continue;
+        }
+
+        if command.starts_with("cd ") {
+            let args: Vec<&str> = command.split_whitespace().collect();
+            if args.len() != 2 {
+                println!("usage: cd <directory>");
+                continue;
+            }
+            let new_dir = args[1];
+            if let Err(_err) = env::set_current_dir(new_dir) {
+                println!("{}: No such file or directory", new_dir);
+            }
+            continue;
+        }        
+
         let parts: Vec<&str> = command.split_whitespace().collect();
         if parts.is_empty() {
             continue;
